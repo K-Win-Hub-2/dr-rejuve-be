@@ -4,10 +4,7 @@ exports.topMostSellingTreatmentLists = async (req, res) => {
   let { startDate, endDate } = req.query;
 
   try {
-    const sellingDoc = await topMostSellingTreatment(
-      (startDate = null),
-      (endDate = null)
-    );
+    const sellingDoc = await topMostSellingTreatment(startDate, endDate);
 
     res.status(200).json({
       status: "success",
