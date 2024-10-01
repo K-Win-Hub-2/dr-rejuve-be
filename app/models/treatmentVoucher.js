@@ -7,7 +7,6 @@ const Schema = mongoose.Schema;
 let TreatmentVoucherSchema = new Schema({
   isDeleted: {
     type: Boolean,
-    required: true,
     default: false,
   },
   discountPercent: {

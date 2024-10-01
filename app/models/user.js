@@ -1,19 +1,19 @@
-'use strict';
-const mongoose = require('mongoose');
+"use strict";
+const mongoose = require("mongoose");
 mongoose.promise = global.Promise;
 const Schema = mongoose.Schema;
-const bcrypt = require('bcryptjs');
-const validator = require('validator');
-const CONFIG = require('../../config/db');
+const bcrypt = require("bcryptjs");
+const validator = require("validator");
+const CONFIG = require("../../config/db");
 
 let UserSchema = new Schema({
   givenName: {
     type: String,
     required: true,
   },
-  accRole:{
-    type:String,
-    enum:['master','supervisor','saleOnly','cashier','MD','doctor']
+  accRole: {
+    type: String,
+    enum: ["master", "supervisor", "saleOnly", "cashier", "MD", "doctor"],
   },
   email: {
     type: String,
@@ -23,9 +23,9 @@ let UserSchema = new Schema({
     validate: {
       isAsync: true,
       validator: validator.isEmail,
-      message: 'Invalid Email Address.',
+      message: "Invalid Email Address.",
     },
-    required: [true, 'User email required'],
+    // required: [true, 'User email required'],
   },
   address: {
     type: String,
@@ -37,7 +37,7 @@ let UserSchema = new Schema({
   phone: {
     type: String,
     unique: true,
-    required: [true, 'Phone Number Required!'],
+    required: [true, "Phone Number Required!"],
   },
   isAdmin: {
     type: Boolean,
@@ -53,7 +53,7 @@ let UserSchema = new Schema({
   },
   gender: {
     type: String,
-    enum: ['Male', 'Female'],
+    enum: ["Male", "Female"],
   },
   position: {
     type: String,
@@ -67,20 +67,19 @@ let UserSchema = new Schema({
     default: null,
   },
   commissionAmount: {
-    type: Number
+    type: Number,
   },
   role: {
     type: String,
-    enum: ['Doctor', 'User', 'Admin', "Sales"]
+    enum: ["Doctor", "User", "Admin", "Sales"],
   },
   branch: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'Branches'
+    ref: "Branches",
   },
-  branchName:{
-    type:String
-  }
-
+  branchName: {
+    type: String,
+  },
 });
 const reasons = (UserSchema.statics.failedLogin = {
   NOT_FOUND: 0,
@@ -88,12 +87,12 @@ const reasons = (UserSchema.statics.failedLogin = {
   MAX_ATTEMPTS: 2,
 });
 
-UserSchema.pre('save', function (next) {
+UserSchema.pre("save", function (next) {
   let user = this;
-  if (!user.isModified('password')) {
+  if (!user.isModified("password")) {
     return next();
   }
-  user.status = 'ACTIVE';
+  user.status = "ACTIVE";
   bcrypt.genSalt(CONFIG.db.saltWorkFactor, function (err, salt) {
     if (err) return next(err);
 
@@ -134,7 +133,7 @@ UserSchema.methods.incLoginAttempts = function (cb) {
         $set: { loginAttempts: 1 },
         $unset: { lockUntil: 1 },
       },
-      cb,
+      cb
     );
   }
   // otherwise we're incrementing
@@ -175,4 +174,4 @@ UserSchema.methods.comparePassword = function (candidatePassword, cb) {
   });
 };
 
-module.exports = mongoose.model('Users', UserSchema);
+module.exports = mongoose.model("Users", UserSchema);
