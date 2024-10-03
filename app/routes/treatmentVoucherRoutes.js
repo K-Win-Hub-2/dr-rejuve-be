@@ -28,36 +28,46 @@ module.exports = (app) => {
       verifyToken,
       catchError(treatmentVoucher.excelImportTreatmentVouchers)
     );
+
   app
     .route("/api/treatment-vouchers")
-    .get(catchError(treatmentVoucher.listAllTreatmentVouchers));
+    .get(verifyToken, catchError(treatmentVoucher.listAllTreatmentVouchers));
+
   app
     .route("/api/treatment-vouchers/search")
     .post(verifyToken, catchError(treatmentVoucher.searchTreatmentVoucher));
+
   app
     .route("/api/treatment-vouchers/filter")
     .post(verifyToken, catchError(treatmentVoucher.getRelatedTreatmentVoucher));
+
   app
     .route("/api/treatment-vouchers/code/ms")
     .get(verifyToken, catchError(treatmentVoucher.getCodeMS));
+
   app
     .route("/api/treatment-vouchers/code")
     .get(verifyToken, catchError(treatmentVoucher.getCode));
+
   app
     .route("/api/treatment-vouchers/today")
     .get(verifyToken, catchError(treatmentVoucher.getTodaysTreatmentVoucher));
+
   app
     .route("/api/treatment-vouchers/get-date")
     .get(verifyToken, catchError(treatmentVoucher.getwithExactDate));
+
   app
     .route("/api/treatment-vouchers/TV-Filter")
-    .get(catchError(treatmentVoucher.TreatmentVoucherFilter));
+    .get(verifyToken, catchError(treatmentVoucher.TreatmentVoucherFilter));
+
   app
     .route("/api/treatment-vouchers/treatment-selection/:id")
     .get(
       verifyToken,
       catchError(treatmentVoucher.getTreatmentVoucherWithTreatmentID)
     );
+
   app
     .route("/api/treatment-vouchers/ms/single")
     .post(
@@ -65,9 +75,11 @@ module.exports = (app) => {
       upload,
       catchError(treatmentVoucher.createSingleMedicineSale)
     );
+
   app
     .route("/api/treatment-vouchers/ms/combine")
     .put(verifyToken, catchError(treatmentVoucher.combineMedicineSale));
+
   app
     .route("/api/treatment-vouchers/ms")
     .put(verifyToken, catchError(treatmentVoucher.updateMedicineSale));
@@ -75,4 +87,8 @@ module.exports = (app) => {
   app
     .route("/api/treatment-vouchers/ms/:id")
     .delete(verifyToken, catchError(treatmentVoucher.deleteMS));
+
+  app
+    .route("/api/treatment-vouchers/lists/vouchers")
+    .get(verifyToken, catchError(treatmentVoucher.getTreatmentVoucherLists));
 };
