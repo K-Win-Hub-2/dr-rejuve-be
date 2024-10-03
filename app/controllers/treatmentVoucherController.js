@@ -20,6 +20,7 @@ const {
   checkAndUpdateTierOfPatient,
 } = require("../helper/pointHelper");
 const { createPointHistory } = require("../services/pointHistoryService");
+const FilterTreatmentInVoucherLists = require("../lib/FilterTreatmentInVoucherLists");
 
 exports.deleteMS = async (req, res) => {
   try {
@@ -740,10 +741,12 @@ exports.TreatmentVoucherFilter = async (req, res) => {
     // relatedBank: { $exists: true },
     isDeleted: false,
   };
+
   let response = {
     success: true,
     data: {},
   };
+
   const {
     discountType,
     income,
@@ -758,6 +761,7 @@ exports.TreatmentVoucherFilter = async (req, res) => {
     tsType,
     relatedPatient,
     bankID,
+    townShip,
   } = req.query;
 
   limit ? (limit = parseInt(limit)) : 10;
@@ -773,7 +777,15 @@ exports.TreatmentVoucherFilter = async (req, res) => {
     createdAt: { $gte: startDay, $lte: endDay },
   };
 
-  if (startDate && endDate) query = { ...query, ...FilterByDate };
+  const FilterByTownShip = {
+    isDeleted: false,
+    townShip: { $regex: new RegExp(townShip, "i") },
+  };
+
+  if (townShip) query = { ...query, ...FilterByTownShip };
+
+  if (startDate && endDate && townShip)
+    query = { ...query, ...FilterByDate, ...FilterByTownShip };
 
   if (discountType) query.discountType = discountType;
   if (relatedPatient) query.relatedPatient = relatedPatient;
@@ -1373,4 +1385,16 @@ exports.deleteTreatmentVoucher = async (req, res, next) => {
   return res
     .status(200)
     .send({ success: true, message: "Successfully Deleted " });
+};
+
+exports.getTreatmentVoucherLists = async (req, res) => {
+  try {
+    let { treatmentName } = req.query;
+
+    const result = await FilterTreatmentInVoucherLists(treatmentName);
+
+    return res.status(200).send({ success: true, data: result });
+  } catch (error) {
+    return res.status(500).send({ error: true, message: error.message });
+  }
 };
