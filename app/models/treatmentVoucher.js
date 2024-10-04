@@ -41,6 +41,10 @@ let TreatmentVoucherSchema = new Schema({
     type: Number,
     default: 0,
   },
+  extra_points: {
+    type: Number,
+    default: 0,
+  },
   secondAccount: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "AccountingLists",
@@ -48,6 +52,9 @@ let TreatmentVoucherSchema = new Schema({
   secondAmount: {
     type: Number,
     default: 0,
+  },
+  townShip: {
+    type: String,
   },
   secondBankType: {
     type: String,
@@ -166,6 +173,10 @@ let TreatmentVoucherSchema = new Schema({
     enum: ["Normal", "POS", "Pay"],
   },
   createdBy: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Users",
+  },
+  salesPerson: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "Users",
   },

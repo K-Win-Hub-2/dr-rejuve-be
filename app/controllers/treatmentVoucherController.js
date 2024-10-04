@@ -762,6 +762,7 @@ exports.TreatmentVoucherFilter = async (req, res) => {
     relatedPatient,
     bankID,
     townShip,
+    salesPerson,
   } = req.query;
 
   limit ? (limit = parseInt(limit)) : 10;
@@ -795,8 +796,10 @@ exports.TreatmentVoucherFilter = async (req, res) => {
   if (bankID) query.relatedBank = bankID;
   if (purchaseType) query.purchaseType = purchaseType;
   if (relatedDoctor) query.relatedDoctor = relatedDoctor;
+  if (salesPerson) query.salesPerson = salesPerson;
 
   response.data = await filterTreatmentVoucherService(query);
+
   res.status(200).send({
     success: true,
     meta_data: {
@@ -844,10 +847,13 @@ exports.createSingleMedicineSale = async (req, res) => {
     msPaidAmount,
     medicineItems,
     balance,
+    userType,
     add_point,
   } = req.body;
+
   let createdBy = req.credentials.id;
   //if add point exists then
+
   if (add_point) {
     const percentByAmount = await CalculateTotalAmountByPercent(req, res);
     if (!percentByAmount.success)
@@ -857,6 +863,7 @@ exports.createSingleMedicineSale = async (req, res) => {
     data.pay_point_to_customer = percentByAmount.point;
     data.giftedPoints = percentByAmount.gift_point;
   }
+
   if (medicineItems !== undefined) {
     for (const e of medicineItems) {
       const result = await MedicineItems.find({ _id: e.item_id });
@@ -864,6 +871,7 @@ exports.createSingleMedicineSale = async (req, res) => {
       const from = result[0].fromUnit;
       const to = result[0].toUnit;
       const currentQty = (from * totalUnit) / to;
+
       try {
         const result = await MedicineItems.findOneAndUpdate(
           { _id: e.item_id },
@@ -873,6 +881,7 @@ exports.createSingleMedicineSale = async (req, res) => {
       } catch (error) {
         return res.status(500).send({ error: true, message: error.message });
       }
+
       const logResult = await Log.create({
         relatedTreatmentSelection: null,
         relatedAppointment: null,
@@ -882,13 +891,16 @@ exports.createSingleMedicineSale = async (req, res) => {
         finalQty: totalUnit,
         type: "Medicine Sale",
         createdBy: createdBy,
+        salesPerson: userType,
       });
     }
   }
+
   //_________COGS___________
   const medicineResult = await MedicineItems.find({
     _id: { $in: medicineItems.map((item) => item.item_id) },
   });
+
   const purchaseTotal = medicineResult.reduce(
     (accumulator, currentValue) => accumulator + currentValue.purchasePrice,
     0
@@ -901,11 +913,14 @@ exports.createSingleMedicineSale = async (req, res) => {
     relatedAccounting: "64a8e06755a87deaea39e17b", //Medicine inventory
     type: "Credit",
     createdBy: createdBy,
+    salesPerson: userType,
   });
+
   var inventoryAmountUpdate = await Accounting.findOneAndUpdate(
     { _id: "64a8e06755a87deaea39e17b" }, // Medicine inventory
     { $inc: { amount: -purchaseTotal } }
   );
+
   const COGSResult = Transaction.create({
     amount: purchaseTotal,
     date: Date.now(),
@@ -914,7 +929,9 @@ exports.createSingleMedicineSale = async (req, res) => {
     type: "Debit",
     relatedTransaction: inventoryResult._id,
     createdBy: createdBy,
+    salesPerson: userType,
   });
+
   var inventoryUpdate = await Transaction.findOneAndUpdate(
     { _id: inventoryResult._id },
     {
@@ -922,6 +939,7 @@ exports.createSingleMedicineSale = async (req, res) => {
     },
     { new: true }
   );
+
   var COGSUpdate = await Accounting.findOneAndUpdate(
     { _id: "64a8e10b55a87deaea39e193" }, //Medicine Sales COGS
     { $inc: { amount: purchaseTotal } }
@@ -936,12 +954,16 @@ exports.createSingleMedicineSale = async (req, res) => {
     relatedAccounting: "648095b57d7e4357442aa457", //Sales Medicines
     type: "Credit",
     createdBy: createdBy,
+    salesPerson: userType,
   });
+
   const fTransResult = await fTransaction.save();
+
   var amountUpdate = await Accounting.findOneAndUpdate(
     { _id: "648095b57d7e4357442aa457" }, //Sales Medicines
     { $inc: { amount: data.msPaidAmount } }
   );
+
   //sec transaction
   const secTransaction = new Transaction({
     amount: data.msPaidAmount,
@@ -952,8 +974,11 @@ exports.createSingleMedicineSale = async (req, res) => {
     type: "Debit",
     relatedTransaction: fTransResult._id,
     createdBy: createdBy,
+    salesPerson: userType,
   });
+
   const secTransResult = await secTransaction.save();
+
   var fTransUpdate = await Transaction.findOneAndUpdate(
     { _id: fTransResult._id },
     {
@@ -961,6 +986,7 @@ exports.createSingleMedicineSale = async (req, res) => {
     },
     { new: true }
   );
+
   if (relatedBank) {
     var amountUpdate = await Accounting.findOneAndUpdate(
       { _id: relatedBank },
@@ -990,13 +1016,16 @@ exports.createSingleMedicineSale = async (req, res) => {
     relatedTransaction: [fTransResult._id, secTransResult._id],
     createdBy: createdBy,
     purchaseTotal: purchaseTotal,
+    salesPerson: userType,
   };
+
   if (purchaseTotal) data.purchaseTotal = purchaseTotal;
 
   //..........END OF TRANSACTION.....................
   console.log(data);
   const newMedicineSale = new TreatmentVoucher(data);
   const medicineSaleResult = await newMedicineSale.save();
+
   if (req.body.msBalance) {
     const debtCreate = await Debt.create({
       balance: req.body.msBalance,
@@ -1004,9 +1033,11 @@ exports.createSingleMedicineSale = async (req, res) => {
       relatedTreatmentVoucher: medicineSaleResult._id,
     });
   }
+
   if (balance) {
     console.log("this is balance ", balance);
   }
+
   if (req.body.add_point) {
     await AddPointByInput(data.relatedPatient, data.pay_point_to_customer);
     await checkAndUpdateTierOfPatient(data.relatedPatient);
@@ -1017,6 +1048,7 @@ exports.createSingleMedicineSale = async (req, res) => {
       relatedTreatmentVoucher: medicineSaleResult._id,
     });
   }
+
   res.status(200).send({
     message: "MedicineSale Transaction success",
     success: true,
