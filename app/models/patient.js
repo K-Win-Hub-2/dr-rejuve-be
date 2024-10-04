@@ -1,51 +1,46 @@
-'use strict';
+"use strict";
 
-const mongoose = require('mongoose');
+const mongoose = require("mongoose");
 mongoose.promise = global.Promise;
 const Schema = mongoose.Schema;
-const validator = require('validator');
-
+const validator = require("validator");
 
 let PatientSchema = new Schema({
   walletUser: {
     type: Boolean,
-    default: false
+    default: false,
   },
   name: {
     type: String,
-    required: true
+    required: true,
   },
   age: {
     type: Number,
   },
   phone: {
     type: String,
-    required: true
+    required: true,
   },
   dateOfBirth: {
     type: Date,
   },
   date: {
-    type: String
-  },
-  email: {
     type: String,
-    unique: true
   },
   password: {
-    type: String
+    type: String,
   },
   total_point: {
     type: Number,
-    default: 0
+    default: 0,
   },
   tierLevel: {
     type: mongoose.Types.ObjectId,
-    ref: 'TierLevels'
+    ref: "TierLevels",
   },
   gender: {
     type: String,
-    enum: ['Male', 'Female'],
+    enum: ["Male", "Female"],
   },
   address: {
     type: String,
@@ -58,41 +53,40 @@ let PatientSchema = new Schema({
     default: Date.now,
   },
   updatedAt: {
-    type: Date
+    type: Date,
   },
   isDeleted: {
     type: Boolean,
     required: true,
-    default: false
+    default: false,
   },
   patientStatus: {
     type: String,
-    enum: ['New', 'Old'],
+    enum: ["New", "Old"],
 
-    default: 'New',
-
+    default: "New",
   },
   patientID: {
     type: String,
   },
   seq: {
-    type: Number
+    type: Number,
   },
   img: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'Attachments',
+    ref: "Attachments",
   },
   relatedTreatmentSelection: {
     type: [mongoose.Schema.Types.ObjectId],
-    ref: 'TreatmentSelections'
+    ref: "TreatmentSelections",
   },
   relatedBranch: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'Branches'
+    ref: "Branches",
   },
   relatedMember: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'Members'
+    ref: "Members",
   },
   conditionAmount: {
     type: Number,
@@ -101,53 +95,62 @@ let PatientSchema = new Schema({
     type: Number,
   },
   conditionPackageQty: {
-    type: Number
+    type: Number,
   },
   treatmentPackageQty: {
-    type: Number
+    type: Number,
   },
   totalAmount: {
-    type: Number
+    type: Number,
   },
   totalAppointments: {
     type: Number,
-    default: 0
+    default: 0,
   },
   finishedAppointments: {
     type: Number,
-    default: 0
+    default: 0,
   },
   unfinishedAppointments: {
     type: Number,
-    default: 0
+    default: 0,
   },
   totalTS: {
     type: Number,
-    default: 0
+    default: 0,
   },
   finishedTS: {
     type: Number,
-    default: 0
+    default: 0,
   },
   unfinishedTS: {
     type: Number,
-    default: 0
+    default: 0,
   },
   maritalStatus: {
     type: String,
-    enum: ['Single', 'Married', 'N/A']
+    enum: ["Single", "Married", "N/A"],
   },
   relatedPackageSelection: {
     type: [mongoose.Schema.Types.ObjectId],
-    ref: 'PackageSelections'
+    ref: "PackageSelections",
   },
   debtBalance: {
     type: Number,
-    default: 0
-  }
+    default: 0,
+  },
+  salePerson: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Users",
+  },
+  township: {
+    type: String,
+  },
+  street: {
+    type: String,
+  },
 });
-const patient = mongoose.model('Patients', PatientSchema)
+const patient = mongoose.model("Patients", PatientSchema);
 module.exports = patient;
-
 
 //Author: Kyaw Zaw Lwin
