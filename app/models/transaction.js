@@ -1,14 +1,13 @@
-'use strict';
+"use strict";
 
-const mongoose = require('mongoose');
+const mongoose = require("mongoose");
 mongoose.promise = global.Promise;
 const Schema = mongoose.Schema;
-
 
 let TransactionSchema = new Schema({
   relatedAccounting: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'AccountingLists'
+    ref: "AccountingLists",
   },
   amount: {
     type: Number,
@@ -17,24 +16,24 @@ let TransactionSchema = new Schema({
     type: Date,
   },
   remark: {
-    type: String
+    type: String,
   },
   type: {
     type: String,
-    enum: ['Debit', 'Credit'],
+    enum: ["Debit", "Credit"],
     // required:true,
   },
   relatedTreatment: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'Treatments',
+    ref: "Treatments",
   },
   relatedBank: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'AccountingLists',
+    ref: "AccountingLists",
   },
   relatedCash: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'AccountingLists',
+    ref: "AccountingLists",
   },
   treatmentFlag: {
     type: Boolean,
@@ -42,37 +41,41 @@ let TransactionSchema = new Schema({
   },
   relatedTransaction: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'Transactions',
-    default: null
+    ref: "Transactions",
+    default: null,
   },
   isDeleted: {
     type: Boolean,
     // required:true,
-    default: false
+    default: false,
   },
   relatedMedicineSale: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'MedicineSales',
-    default: null
+    ref: "MedicineSales",
+    default: null,
   },
   relatedBranch: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'Branches'
+    ref: "Branches",
   },
   createdBy: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'Users'
+    ref: "Users",
   },
-  relatedIncome:{
-    type:mongoose.Schema.Types.ObjectId,
-    ref:'Incomes'
+  relatedIncome: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Incomes",
   },
-  relatedExpense:{
-    type:mongoose.Schema.Types.ObjectId,
-    ref:'Expenses'
-  }
+  relatedExpense: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Expenses",
+  },
+  salesPerson: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Users",
+  },
 });
 
-module.exports = mongoose.model('Transactions', TransactionSchema);
+module.exports = mongoose.model("Transactions", TransactionSchema);
 
 //Author: Kyaw Zaw Lwin

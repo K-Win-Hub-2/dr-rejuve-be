@@ -34,6 +34,10 @@ let PatientSchema = new Schema({
     type: Number,
     default: 0,
   },
+  extra_point: {
+    type: Number,
+    default: 0,
+  },
   tierLevel: {
     type: mongoose.Types.ObjectId,
     ref: "TierLevels",
