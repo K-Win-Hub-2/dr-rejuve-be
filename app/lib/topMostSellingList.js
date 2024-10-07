@@ -26,9 +26,11 @@ const topMostSellingTreatment = async (name, startDate, endDate) => {
     {
       $match: query,
     },
+
     {
       $unwind: "$multiTreatment",
     },
+
     {
       $lookup: {
         from: "treatments",
@@ -37,6 +39,7 @@ const topMostSellingTreatment = async (name, startDate, endDate) => {
         as: "treatmentDetails",
       },
     },
+
     { $unwind: "$treatmentDetails" },
 
     {
@@ -47,6 +50,7 @@ const topMostSellingTreatment = async (name, startDate, endDate) => {
         as: "treatmentListDetails",
       },
     },
+
     { $unwind: "$treatmentListDetails" },
 
     ...(name
@@ -71,7 +75,9 @@ const topMostSellingTreatment = async (name, startDate, endDate) => {
         treatmentListName: { $first: "$treatmentListDetails.name" },
       },
     },
+
     { $sort: { saleCount: -1 } },
+
     { $limit: 10 },
 
     {
@@ -87,7 +93,7 @@ const topMostSellingTreatment = async (name, startDate, endDate) => {
 
     {
       $group: {
-        _id: null,
+        _id: 1,
         treatments: { $push: "$$ROOT" },
         grandTotalPaidAmount: { $sum: "$totalPaidAmount" },
         grandTotalDiscountAmount: { $sum: "$totalDiscountAmount" },
