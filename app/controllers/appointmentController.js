@@ -5,6 +5,7 @@ const Patient = require("../models/patient");
 const Doctor = require("../models/doctor");
 var ObjectID = require("mongodb").ObjectID; //to check if the value is objectid or not
 const Treatment = require("../models/treatment");
+const AggregateAppointmentFilter = require("../services/appointmentsFilter");
 
 function formatDateAndTime(dateString) {
   // format mongodb ISO 8601 date format into two readable var {date, time}.
@@ -301,5 +302,35 @@ exports.searchAppointment = async (req, res, next) => {
     return res.status(200).send({ success: true, data: result });
   } catch (err) {
     return res.status(500).send({ error: true, message: err.message });
+  }
+};
+
+exports.AggregateAppointment = async (req, res, next) => {
+  let { startDate, endDate, doctorName, voucherCode, treatmentName } =
+    req.query;
+
+  console.log("query from params", req.query);
+
+  try {
+    const filterAppointment = await AggregateAppointmentFilter(
+      startDate,
+      endDate,
+      doctorName,
+      voucherCode,
+      treatmentName
+    );
+
+    console.log(filterAppointment);
+
+    return res.status(200).json({
+      status: "success",
+      data: filterAppointment,
+    });
+  } catch (error) {
+    console.error("Error in topMostSellingTreatmentLists", error);
+    res.status(500).json({
+      status: "error",
+      message: "Internal server error",
+    });
   }
 };
