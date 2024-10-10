@@ -1,9 +1,8 @@
-'use strict';
+"use strict";
 
-const mongoose = require('mongoose');
+const mongoose = require("mongoose");
 mongoose.promise = global.Promise;
 const Schema = mongoose.Schema;
-
 
 let TierSchema = new Schema({
   name: {
@@ -14,16 +13,16 @@ let TierSchema = new Schema({
   },
   relatedFixedDiscountPercent: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: "FixedDiscountPercents"
+    ref: "FixedDiscountPercents",
   },
   total_point: {
     type: Number,
-    default: 0
+    default: 0,
   },
   isDeleted: {
     type: Boolean,
-    default: false
-  }
+    default: false,
+  },
 });
 
-module.exports = mongoose.model('TierLevels', TierSchema);
+module.exports = mongoose.model("TierLevels", TierSchema);
