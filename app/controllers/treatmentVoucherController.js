@@ -785,8 +785,7 @@ exports.TreatmentVoucherFilter = async (req, res) => {
 
   if (townShip) query = { ...query, ...FilterByTownShip };
 
-  if (startDate && endDate && townShip)
-    query = { ...query, ...FilterByDate, ...FilterByTownShip };
+  if (startDate && endDate) query = { ...query, ...FilterByDate };
 
   if (discountType) query.discountType = discountType;
   if (relatedPatient) query.relatedPatient = relatedPatient;
