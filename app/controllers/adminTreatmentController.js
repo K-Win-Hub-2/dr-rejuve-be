@@ -263,7 +263,10 @@ exports.deleteTreatment = async (req, res, next) => {
     });
 
     // Delete the treatment document
-    await adminTreatmentModel.findByIdAndDelete(id);
+    await adminTreatmentModel.findByIdAndUpdate(
+      { _id: id },
+      { isDeleted: true }
+    );
 
     return res
       .status(200)
