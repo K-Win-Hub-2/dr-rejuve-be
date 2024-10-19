@@ -171,7 +171,7 @@ exports.CalculateTotalAmountByPercent = async (req, res) => {
 
   tsType === "TSMulti"
     ? (pointData = await getPointDiscountRule({
-        // discountId: patientData.tierLevel.relatedFixedDiscountPercent,
+        discountId: patientData.tierLevel.relatedFixedDiscountPercent,
         totalAmount: totalAmount,
         treatmentType: treatmentType,
         relatedGiftPointRules: relatedGiftPointRules,
