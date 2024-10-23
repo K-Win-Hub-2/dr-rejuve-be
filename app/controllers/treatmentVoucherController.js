@@ -21,6 +21,7 @@ const {
 } = require("../helper/pointHelper");
 const { createPointHistory } = require("../services/pointHistoryService");
 const FilterTreatmentInVoucherLists = require("../lib/FilterTreatmentInVoucherLists");
+const AppointmentModels = require("../models/appointment");
 
 exports.deleteMS = async (req, res) => {
   try {
@@ -83,9 +84,19 @@ exports.listAllTreatmentVouchers = async (req, res) => {
 
     let result = await TreatmentVoucher.find(query)
       .populate(
-        "relatedDoctor createdBy relatedTreatment relatedAppointment payment relatedTreatmentSelection medicineItems.item_id multiTreatment.item_id"
+        "relatedDoctor createdBy relatedTreatment payment medicineItems.item_id multiTreatment.item_id"
       )
       .populate("relatedPatient")
+      .populate({
+        path: "relatedTreatmentSelection",
+        populate: {
+          path: "relatedAppointments",
+          model: "Appointments",
+          populate: {
+            path: "relatedDoctor relatedTherapist relatedTreatment",
+          },
+        },
+      })
       .populate({
         path: "repay",
         populate: {

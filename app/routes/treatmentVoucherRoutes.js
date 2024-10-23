@@ -31,7 +31,7 @@ module.exports = (app) => {
 
   app
     .route("/api/treatment-vouchers")
-    .get(verifyToken, catchError(treatmentVoucher.listAllTreatmentVouchers));
+    .get(catchError(treatmentVoucher.listAllTreatmentVouchers));
 
   app
     .route("/api/treatment-vouchers/search")
