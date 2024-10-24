@@ -89,13 +89,19 @@ exports.listAllTreatmentVouchers = async (req, res) => {
       .populate("relatedPatient")
       .populate({
         path: "relatedTreatmentSelection",
-        populate: {
-          path: "relatedAppointments",
-          model: "Appointments",
-          populate: {
-            path: "relatedDoctor relatedTherapist relatedTreatment",
+        populate: [
+          {
+            path: "relatedTreatment",
+            model: "Treatments",
           },
-        },
+          {
+            path: "relatedAppointments",
+            model: "Appointments",
+            populate: {
+              path: "relatedDoctor relatedTherapist",
+            },
+          },
+        ],
       })
       .populate({
         path: "repay",
