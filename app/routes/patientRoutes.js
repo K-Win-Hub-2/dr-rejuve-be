@@ -39,4 +39,8 @@ module.exports = (app) => {
   app
     .route("/api/patients/history-and-patient/:id")
     .get(verifyToken, catchError(patient.getHistoryAndPhysicalExamination));
+
+  app
+    .route("/api/patients/info-filter")
+    .get(catchError(patient.getPatientInfoFilter));
 };

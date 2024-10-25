@@ -11,6 +11,7 @@ const {
 } = require("../helper/passwordDecryptAndEncryptHelper");
 const { ObjectId } = require("mongodb");
 const tierLevel = require("../models/tierLevel");
+const { patientFilter } = require("../services/customerFilter");
 
 function formatDateAndTime(dateString) {
   // format mongodb ISO 8601 date format into two readable var {date, time}.
@@ -421,6 +422,17 @@ exports.topTenPatients = async (req, res) => {
         },
       });
     return res.status(200).send({ success: true, data: patientResult });
+  } catch (error) {
+    return res.status(500).send({ error: true, message: error.message });
+  }
+};
+
+exports.getPatientInfoFilter = async (req, res) => {
+  const { name, phone } = req.query;
+
+  try {
+    const patients = await patientFilter(name, phone);
+    return res.status(200).send({ success: true, data: patients });
   } catch (error) {
     return res.status(500).send({ error: true, message: error.message });
   }
