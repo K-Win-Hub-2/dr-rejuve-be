@@ -71,7 +71,7 @@ const getTopCustomerDetails = async (startDate, endDate) => {
         medicine: {
           voucherCode: { $arrayElemAt: ["$highestMedicineVoucher.code", 0] },
           paidAmount: {
-            $arrayElemAt: ["$highestMedicineVoucher.totalPaidAmount", 0],
+            $arrayElemAt: ["$highestMedicineVoucher.msPaidAmount", 0],
           },
         },
         treatment: {
