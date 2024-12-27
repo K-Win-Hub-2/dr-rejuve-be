@@ -6,6 +6,7 @@ const {
   getCustomerVisitsForDashBoard,
   getTopOneCustomerForDashBoard,
 } = require("../controllers/dashboardController");
+const { getYearlyIncome } = require("../dashboard/monthlyIncome");
 const { catchError } = require("../lib/errorHandler");
 
 module.exports = (app) => {
@@ -32,4 +33,6 @@ module.exports = (app) => {
   app
     .route("/api/dashboard/top-one-customer")
     .get(catchError(getTopOneCustomerForDashBoard));
+
+  app.route("/api/yearly-income").get(catchError(getYearlyIncome));
 };
