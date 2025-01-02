@@ -1399,8 +1399,10 @@ exports.TopTenFilter = async (req, res) => {
   try {
     let query = { isDeleted: false };
     let { start, end, tsType } = req.query;
+
     if ((start, end)) query.createdAt = { $gte: start, $lte: end };
     if (tsType) query.tsType = tsType;
+
     const TreatmentResult = await TreatmentSelection.find(query)
       .populate("relatedTreatment multiTreatment.item_id")
       .populate({
@@ -1410,6 +1412,7 @@ exports.TopTenFilter = async (req, res) => {
           model: "TreatmentLists",
         },
       });
+
     if (tsType === "TS") {
       const treatmentNameMap = TreatmentResult.reduce(
         (result, { relatedTreatment }) => {
@@ -1417,10 +1420,13 @@ exports.TopTenFilter = async (req, res) => {
             // Handle the case where relatedTreatment is undefined
             return result; // Skip this iteration
           }
+
           const { name, treatmentName } = relatedTreatment;
           const treatmentUnit = name;
           const treatment = treatmentName.name;
+
           console.log(treatmentUnit);
+
           if (result.hasOwnProperty(treatmentUnit)) {
             result[treatmentUnit].qty++;
           } else {
@@ -1436,6 +1442,7 @@ exports.TopTenFilter = async (req, res) => {
       const sortedTreatmentNames = reducedTreatmentNames.sort(
         (a, b) => b.qty - a.qty
       ); // Descending
+
       return res.status(200).send({
         success: true,
         data: sortedTreatmentNames,
@@ -1447,7 +1454,9 @@ exports.TopTenFilter = async (req, res) => {
           if (multiTreatment.length === 0) {
             return result; // Skip this iteration
           }
+
           console.log(multiTreatment);
+
           multiTreatment.forEach((item) => {
             const { name, treatmentName } = item.item_id;
             const treatmentUnit = name || "Undefined"; // Use 'Undefined' if name is falsy
@@ -1461,6 +1470,7 @@ exports.TopTenFilter = async (req, res) => {
           });
           return result; // Return the updated result object for the current iteration
         },
+
         {}
       );
 
@@ -1469,6 +1479,7 @@ exports.TopTenFilter = async (req, res) => {
       const sortedTreatmentNames = reducedTreatmentNames.sort(
         (a, b) => b.qty - a.qty
       ); // Descending
+
       return res.status(200).send({
         success: true,
         data: sortedTreatmentNames,
@@ -1478,5 +1489,114 @@ exports.TopTenFilter = async (req, res) => {
   } catch (error) {
     console.log(error);
     return res.status(500).send({ error: true, message: error.message });
+  }
+};
+
+exports.getTreatmentsWithSalesFilter = async (req, res) => {
+  try {
+    const { startDate, endDate } = req.query;
+
+    if (!startDate || !endDate) {
+      return res.status(400).send({
+        success: false,
+        message: "Both startDate and endDate are required.",
+      });
+    }
+
+    const start = new Date(startDate);
+    const end = new Date(endDate);
+
+    const treatments = await TreatmentSelection.aggregate([
+      {
+        $match: {
+          isDeleted: false,
+          createdAt: { $gte: start, $lte: end },
+          tsType: { $in: ["TS", "TSMulti"] },
+          purchaseType: { $ne: null },
+        },
+      },
+      {
+        $unwind: "$multiTreatment",
+      },
+      {
+        $lookup: {
+          from: "treatments",
+          localField: "multiTreatment.item_id",
+          foreignField: "_id",
+          as: "treatmentDetails",
+        },
+      },
+      {
+        $unwind: "$treatmentDetails",
+      },
+      {
+        $addFields: {
+          treatmentUnit: "$treatmentDetails.name",
+          qty: "$multiTreatment.qty",
+        },
+      },
+      {
+        $group: {
+          _id: {
+            purchaseType: "$purchaseType",
+            treatmentUnit: "$treatmentUnit",
+          },
+          qty: { $sum: "$qty" },
+        },
+      },
+      {
+        $group: {
+          _id: "$_id.purchaseType",
+          treatments: {
+            $push: {
+              treatmentUnit: "$_id.treatmentUnit",
+              qty: "$qty",
+            },
+          },
+        },
+      },
+      {
+        $project: {
+          _id: 0,
+          purchaseType: "$_id",
+          treatments: 1,
+        },
+      },
+      {
+        $project: {
+          purchaseType: 1,
+          treatments: {
+            $map: {
+              input: "$treatments",
+              as: "item",
+              in: {
+                treatmentUnit: "$$item.treatmentUnit",
+                qty: "$$item.qty",
+              },
+            },
+          },
+        },
+      },
+      {
+        $project: {
+          purchaseType: 1,
+          treatments: {
+            $sortArray: { input: "$treatments", sortBy: { qty: -1 } },
+          },
+        },
+      },
+    ]);
+
+    return res.status(200).send({
+      success: true,
+      data: treatments,
+    });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).send({
+      success: false,
+      message: "An error occurred while fetching treatments.",
+      error: error.message,
+    });
   }
 };
