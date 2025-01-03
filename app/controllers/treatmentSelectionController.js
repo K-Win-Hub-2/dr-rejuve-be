@@ -1506,7 +1506,7 @@ exports.getTreatmentsWithSalesFilter = async (req, res) => {
     const start = new Date(startDate);
     const end = new Date(endDate);
 
-    const treatments = await TreatmentSelection.aggregate([
+    const treatments = await TreatmentVoucher.aggregate([
       {
         $match: {
           isDeleted: false,
@@ -1556,46 +1556,76 @@ exports.getTreatmentsWithSalesFilter = async (req, res) => {
         },
       },
       {
+        $addFields: {
+          treatments: {
+            $sortArray: { input: "$treatments", sortBy: { qty: -1 } },
+          },
+        },
+      },
+      {
         $project: {
           _id: 0,
           purchaseType: "$_id",
           treatments: 1,
         },
       },
+    ]);
+
+    const medicines = await TreatmentVoucher.aggregate([
       {
-        $project: {
-          purchaseType: 1,
-          treatments: {
-            $map: {
-              input: "$treatments",
-              as: "item",
-              in: {
-                treatmentUnit: "$$item.treatmentUnit",
-                qty: "$$item.qty",
-              },
-            },
-          },
+        $match: {
+          isDeleted: false,
+          createdAt: { $gte: start, $lte: end },
+          tsType: "MS",
         },
       },
       {
+        $unwind: "$medicineItems",
+      },
+      {
+        $lookup: {
+          from: "medicineitems",
+          localField: "medicineItems.item_id",
+          foreignField: "_id",
+          as: "medicineDetails",
+        },
+      },
+      {
+        $unwind: "$medicineDetails",
+      },
+      {
+        $addFields: {
+          medicineName: "$medicineDetails.medicineItemName",
+          qty: "$medicineItems.qty",
+        },
+      },
+      {
+        $group: {
+          _id: "$medicineName",
+          qty: { $sum: "$qty" },
+        },
+      },
+      {
+        $sort: { qty: -1 }, // Sort medicines by quantity in descending order
+      },
+      {
         $project: {
-          purchaseType: 1,
-          treatments: {
-            $sortArray: { input: "$treatments", sortBy: { qty: -1 } },
-          },
+          _id: 0,
+          medicineName: "$_id",
+          qty: 1,
         },
       },
     ]);
 
     return res.status(200).send({
       success: true,
-      data: treatments,
+      data: { treatments, medicines },
     });
   } catch (error) {
     console.error(error);
     return res.status(500).send({
       success: false,
-      message: "An error occurred while fetching treatments.",
+      message: "An error occurred while fetching treatments and medicines.",
       error: error.message,
     });
   }
